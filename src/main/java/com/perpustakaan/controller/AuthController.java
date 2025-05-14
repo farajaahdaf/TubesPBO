@@ -62,6 +62,7 @@ public class AuthController {
             
             authService.register(username, password, "USER"); 
             redirectAttributes.addFlashAttribute("success", "Registrasi berhasil! Silakan login.");
+            System.out.println("Registrasi berhasil!");
             return "redirect:/login";
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());

@@ -45,7 +45,7 @@
                     <div class="card-body text-center">
                         <i class="bi bi-book display-4"></i>
                         <h5 class="card-title mt-3">Buku Tersedia</h5>
-                        <p class="card-text display-6">0</p>
+                        <p class="card-text display-6" th:text="${totalBooks}"></p>
                     </div>
                 </div>
             </div>
@@ -75,8 +75,40 @@
                 <h5 class="card-title mb-0">Buku Terbaru</h5>
             </div>
             <div class="card-body">
-                <div class="alert alert-info">
+                <div th:if="${books == null || books.empty}" class="alert alert-info">
                     <i class="bi bi-info-circle"></i> Belum ada buku yang tersedia.
+                </div>
+                <div th:if="${books != null && !books.empty}" class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ISBN</th>
+                                <th>Judul</th>
+                                <th>Penulis</th>
+                                <th>Stok</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="book : ${books}">
+                                <td th:text="${book.isbn}"></td>
+                                <td th:text="${book.title}"></td>
+                                <td th:text="${book.author}"></td>
+                                <td>
+                                    <span th:if="${book.stock > 0}" class="badge bg-success" th:text="${book.stock}"></span>
+                                    <span th:if="${book.stock == 0}" class="badge bg-danger">Habis</span>
+                                </td>
+                                <td>
+                                    <button th:if="${book.stock > 0}" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-journal-plus"></i> Pinjam
+                                    </button>
+                                    <button th:if="${book.stock == 0}" class="btn btn-secondary btn-sm" disabled>
+                                        <i class="bi bi-journal-x"></i> Tidak Tersedia
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

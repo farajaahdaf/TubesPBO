@@ -19,7 +19,7 @@
                         <a class="nav-link active" href="#"><i class="bi bi-house"></i> Dashboard</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#"><i class="bi bi-book"></i> Kelola Buku</a>
+                        <a class="nav-link" href="/admin/books"><i class="bi bi-book"></i> Kelola Buku</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#"><i class="bi bi-journal-text"></i> Peminjaman</a>
@@ -39,13 +39,24 @@
 
     <!-- Content -->
     <div class="container mt-4">
+        <!-- Alert Messages -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill"></i> <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
         <div class="row">
             <div class="col-md-3">
                 <div class="card mb-4">
                     <div class="card-body text-center">
                         <i class="bi bi-book display-4"></i>
                         <h5 class="card-title mt-3">Total Buku</h5>
-                        <p class="card-text display-6">0</p>
+                        <p class="card-text display-6" th:text="${totalBooks}">0</p>
+                        <!-- <small class="text-muted">Total Stok: <span th:text="${totalBookStock}">0</span></small> -->
                     </div>
                 </div>
             </div>
@@ -54,7 +65,7 @@
                     <div class="card-body text-center">
                         <i class="bi bi-people display-4"></i>
                         <h5 class="card-title mt-3">Total User</h5>
-                        <p class="card-text display-6">0</p>
+                        <p class="card-text display-6" th:text="${JumlahUser}">0</p>
                     </div>
                 </div>
             </div>
@@ -87,14 +98,14 @@
                     </div>
                     <div class="card-body">
                         <div class="d-grid gap-2">
-                            <a href="#" class="btn btn-primary">
+                            <a href="/admin/books/add" class="btn btn-primary">
                                 <i class="bi bi-plus-circle"></i> Tambah Buku Baru
                             </a>
-                            <a href="#" class="btn btn-info text-white">
-                                <i class="bi bi-journal-plus"></i> Edit Buku
+                            <a href="/admin/books" class="btn btn-info text-white">
+                                <i class="bi bi-book"></i> Kelola Buku
                             </a>
-                            <a href="#" class="btn btn-danger">
-                                <i class="bi bi-trash"></i> Hapus Buku
+                            <a href="#" class="btn btn-warning text-white">
+                                <i class="bi bi-journal-text"></i> Kelola Peminjaman
                             </a>
                         </div>
                     </div>

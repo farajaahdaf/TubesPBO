@@ -6,6 +6,7 @@ import com.perpustakaan.model.User;
 import com.perpustakaan.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import jakarta.annotation.PostConstruct;
 
 @Service
 public class AuthService {
@@ -13,6 +14,22 @@ public class AuthService {
     @Autowired
     private UserRepository userRepository;
     
+    @PostConstruct
+    public void init() {
+        createDefaultAdmin();
+    }
+    
+    private void createDefaultAdmin() {
+        if (userRepository.findByUsername("admin").isEmpty()) {
+            User admin = new Admin();
+            admin.setUsername("admin");
+            admin.setPassword("admin123");
+            admin.setRole("ADMIN");
+            userRepository.save(admin);
+            System.out.println("Default admin account created!");
+        }
+    }
+
     public User register(String username, String password, String role) {
         if (userRepository.findByUsername(username).isPresent()) {
             throw new RuntimeException("Username sudah digunakan! Silakan pilih username lain.");
@@ -23,7 +40,7 @@ public class AuthService {
             user = new Admin();
         } else {
             user = new CommonUser();
-            role = "USER"; // Memastikan role untuk common user selalu "USER"
+            role = "USER"; 
         }
         
         user.setUsername(username);
@@ -42,5 +59,9 @@ public class AuthService {
         }
         
         return user;
+    }
+
+    public long getTotalUser() {
+        return userRepository.count();
     }
 } 

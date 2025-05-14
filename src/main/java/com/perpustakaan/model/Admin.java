@@ -9,15 +9,18 @@ import lombok.Setter;
 @Setter
 public class Admin extends User {
     
-    public void addBook() {
-        // Implementasi akan ditambahkan nanti
+    public void addBook(Book book) {
+        // Method ini akan diimplementasikan di BookService
+        // Admin hanya memiliki hak akses untuk menambah buku
     }
     
-    public void editBook() {
-        // Implementasi akan ditambahkan nanti
+    public void editBook(Book book) {
+        // Method ini akan diimplementasikan di BookService
+        // Admin hanya memiliki hak akses untuk mengedit buku
     }
     
-    public void deleteBook() {
-        // Implementasi akan ditambahkan nanti
+    public void deleteBook(Long isbn) {
+        // Method ini akan diimplementasikan di BookService
+        // Admin hanya memiliki hak akses untuk menghapus buku
     }
 } 
