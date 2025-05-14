@@ -62,6 +62,8 @@ public class AuthService {
     }
 
     public long getTotalUser() {
-        return userRepository.count();
+        return userRepository.findAll().stream()
+                .filter(user -> !"ADMIN".equals(user.getRole()))
+                .count();
     }
 } 
