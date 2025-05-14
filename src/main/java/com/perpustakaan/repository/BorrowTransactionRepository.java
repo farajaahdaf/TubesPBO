@@ -14,4 +14,8 @@ public interface BorrowTransactionRepository extends JpaRepository<BorrowTransac
     long countByUserAndStatus(User user, String status);
     long countByUser(User user);
     long countByStatusAndBorrowDateBefore(String status, LocalDateTime date);
+    
+    // Tambahan method untuk pengecekan dan penghapusan buku
+    List<BorrowTransaction> findByBookIsbnAndStatus(Long isbn, String status);
+    void deleteByBookIsbn(Long isbn);
 } 
