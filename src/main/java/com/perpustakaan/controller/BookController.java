@@ -16,8 +16,12 @@ public class BookController {
     private BookService bookService;
     
     @GetMapping
-    public String listBooks(Model model) {
-        model.addAttribute("books", bookService.getAllBooks());
+    public String listBooks(@RequestParam(value = "keyword", required = false) String keyword, Model model) {
+        if (keyword != null && !keyword.isEmpty()) {
+            model.addAttribute("books", bookService.searchBooks(keyword));
+        } else {
+            model.addAttribute("books", bookService.getAllBooks());
+        }
         return "admin/books/list";
     }
     

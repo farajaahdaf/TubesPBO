@@ -28,7 +28,7 @@ public class BookService {
     
     public void deleteBook(Long isbn) {
         if (!bookRepository.existsById(isbn)) {
-            throw new RuntimeException("Buku dengan ISBN " + isbn + " tidak ditemukan!");
+            throw new RuntimeException("Buku dengan ISBN " + isbn + "tidak ditemukan!");
         }
         bookRepository.deleteById(isbn);
     }
@@ -39,7 +39,7 @@ public class BookService {
     
     public Book getBookByIsbn(Long isbn) {
         return bookRepository.findById(isbn)
-            .orElseThrow(() -> new RuntimeException("Buku dengan ISBN " + isbn + " tidak ditemukan!"));
+            .orElseThrow(() -> new RuntimeException("Buku dengan ISBN " + isbn + "tidak ditemukan!"));
     }
     
     public void updateStock(Long isbn, int amount, boolean isAdd) {
@@ -60,5 +60,9 @@ public class BookService {
         return getAllBooks().stream()
                 .mapToInt(Book::getStock)
                 .sum();
+    }
+
+    public List<Book> searchBooks(String keyword) {
+        return bookRepository.findByTitleContainingIgnoreCaseOrAuthorContainingIgnoreCase(keyword, keyword);
     }
 } 
