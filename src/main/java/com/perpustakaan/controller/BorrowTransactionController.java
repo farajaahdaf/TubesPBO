@@ -12,6 +12,7 @@ import com.perpustakaan.service.BorrowTransactionService;
 import com.perpustakaan.service.BookService;
 import jakarta.servlet.http.HttpSession;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Controller
 @RequestMapping("/transactions")
@@ -47,6 +48,18 @@ public class BorrowTransactionController {
 
         try {
             Book book = bookService.getBookByIsbn(isbn);
+            // Check if user already has an active loan for this book
+            List<BorrowTransaction> activeLoans = borrowTransactionService.getActiveBorrowings(user);
+            boolean alreadyBorrowed = activeLoans.stream()
+                .anyMatch(loan -> loan.getBook().getIsbn().equals(isbn));
+            
+            if (alreadyBorrowed) {
+                redirectAttributes.addFlashAttribute("error", 
+                    "Anda sudah meminjam buku ini. Silakan kembalikan terlebih dahulu sebelum meminjam lagi.");
+                return "redirect:/dashboard";
+                
+            }
+            
             if (book != null && book.getStock() > 0) {
                 BorrowTransaction transaction = new BorrowTransaction();
                 transaction.setBook(book);
@@ -63,7 +76,7 @@ public class BorrowTransactionController {
         }
         
         redirectAttributes.addFlashAttribute("error", "Maaf, buku tidak tersedia untuk dipinjam");
-        return "redirect:/books-list";
+        return "redirect:/dashboard";
     }
 
     @GetMapping("/return/{id}")

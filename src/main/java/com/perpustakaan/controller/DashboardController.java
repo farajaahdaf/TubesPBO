@@ -2,6 +2,7 @@ package com.perpustakaan.controller;
 
 import com.perpustakaan.model.User;
 import com.perpustakaan.model.BorrowTransaction;
+import com.perpustakaan.model.Book;
 import com.perpustakaan.service.AuthService;
 import com.perpustakaan.service.BookService;
 import com.perpustakaan.service.BorrowTransactionService;
@@ -11,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 public class DashboardController {
@@ -53,9 +55,17 @@ public class DashboardController {
             
             return "admin/dashboard";
         } else {
-            model.addAttribute("books", bookService.getAllBooks());
-            // Add user-specific borrowing data
+            // Get all books and active loans
+            List<Book> allBooks = bookService.getAllBooks();
             List<BorrowTransaction> activeLoans = borrowTransactionService.getActiveBorrowings(user);
+            
+            // Filter out books that are currently borrowed by the user
+            List<Book> availableBooks = allBooks.stream()
+                .filter(book -> activeLoans.stream()
+                    .noneMatch(loan -> loan.getBook().getIsbn().equals(book.getIsbn())))
+                .toList();
+            
+            model.addAttribute("books", availableBooks);
             model.addAttribute("activeLoans", activeLoans);
             model.addAttribute("borrowedCount", activeLoans.size());
             model.addAttribute("totalTransactions", borrowTransactionService.getTotalTransactions(user));
