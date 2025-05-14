@@ -22,7 +22,7 @@
                         <a class="nav-link" href="/admin/books"><i class="bi bi-book"></i> Kelola Buku</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#"><i class="bi bi-journal-text"></i> Peminjaman</a>
+                        <a class="nav-link" href="/admin/users"><i class="bi bi-people"></i> Kelola User</a>
                     </li>
                 </ul>
                 <div class="d-flex">
@@ -51,22 +51,26 @@
 
         <div class="row">
             <div class="col-md-3">
-                <div class="card mb-4">
-                    <div class="card-body text-center">
-                        <i class="bi bi-book display-4"></i>
-                        <h5 class="card-title mt-3">Total Buku</h5>
-                        <p class="card-text display-6" th:text="${totalBooks}">0</p>
+                <a href="/admin/books" class="text-decoration-none">
+                    <div class="card mb-4">
+                        <div class="card-body text-center">
+                            <i class="bi bi-book display-4"></i>
+                            <h5 class="card-title mt-3">Total Buku</h5>
+                            <p class="card-text display-6" th:text="${totalBooks}">0</p>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
             <div class="col-md-3">
-                <div class="card mb-4">
-                    <div class="card-body text-center">
-                        <i class="bi bi-people display-4"></i>
-                        <h5 class="card-title mt-3">Total User</h5>
-                        <p class="card-text display-6" th:text="${JumlahUser}">0</p>
+                <a href="/admin/users" class="text-decoration-none">
+                    <div class="card mb-4">
+                        <div class="card-body text-center">
+                            <i class="bi bi-people display-4"></i>
+                            <h5 class="card-title mt-3">Total User</h5>
+                            <p class="card-text display-6" th:text="${JumlahUser}">0</p>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
             <div class="col-md-3">
                 <div class="card mb-4">

@@ -62,4 +62,17 @@ public class DashboardController {
             return "user/dashboard";
         }
     }
+
+    @GetMapping("/admin/users")
+    public String listUsers(HttpSession session, Model model) {
+        User user = (User) session.getAttribute("user");
+        
+        if (user == null || !"ADMIN".equals(user.getRole())) {
+            return "redirect:/login";
+        }
+        
+        List<User> users = authService.getAllUsers();
+        model.addAttribute("users", users);
+        return "admin/listUser";
+    }
 } 

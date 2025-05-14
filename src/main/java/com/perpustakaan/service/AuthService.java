@@ -7,6 +7,7 @@ import com.perpustakaan.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import jakarta.annotation.PostConstruct;
+import java.util.List;
 
 @Service
 public class AuthService {
@@ -65,5 +66,9 @@ public class AuthService {
         return userRepository.findAll().stream()
                 .filter(user -> !"ADMIN".equals(user.getRole()))
                 .count();
+    }
+
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
     }
 } 
