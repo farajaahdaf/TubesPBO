@@ -59,13 +59,13 @@ public class DashboardController {
             List<Book> allBooks = bookService.getAllBooks();
             List<BorrowTransaction> activeLoans = borrowTransactionService.getActiveBorrowings(user);
             
-            // Filter out books that are currently borrowed by the user
-            List<Book> availableBooks = allBooks.stream()
-                .filter(book -> activeLoans.stream()
-                    .noneMatch(loan -> loan.getBook().getIsbn().equals(book.getIsbn())))
+            // Create a list of ISBNs of currently borrowed books
+            List<Long> borrowedBookIsbn = activeLoans.stream()
+                .map(loan -> loan.getBook().getIsbn())
                 .toList();
             
-            model.addAttribute("books", availableBooks);
+            model.addAttribute("books", allBooks);
+            model.addAttribute("borrowedBookIsbn", borrowedBookIsbn);
             model.addAttribute("activeLoans", activeLoans);
             model.addAttribute("borrowedCount", activeLoans.size());
             model.addAttribute("totalTransactions", borrowTransactionService.getTotalTransactions(user));

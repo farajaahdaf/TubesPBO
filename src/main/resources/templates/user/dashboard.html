@@ -112,7 +112,16 @@
                                     <span th:if="${book.stock == 0}" class="badge bg-danger">Habis</span>
                                 </td>
                                 <td>
-                                    <form th:action="@{/transactions/borrow/{isbn}(isbn=${book.isbn})}" method="post">
+                                    <!-- Cek apakah buku sedang dipinjam oleh user -->
+                                    <div th:if="${borrowedBookIsbn.contains(book.isbn)}">
+                                        <button class="btn btn-warning btn-sm" disabled>
+                                            <i class="bi bi-journal-check"></i> Anda Sudah Meminjam Buku Ini
+                                        </button>
+                                    </div>
+                                    <!-- Jika buku tidak sedang dipinjam -->
+                                    <form th:if="${!borrowedBookIsbn.contains(book.isbn)}" 
+                                          th:action="@{/transactions/borrow/{isbn}(isbn=${book.isbn})}" 
+                                          method="post">
                                         <button th:if="${book.stock > 0}" type="submit" class="btn btn-primary btn-sm">
                                             <i class="bi bi-journal-plus"></i> Pinjam
                                         </button>
