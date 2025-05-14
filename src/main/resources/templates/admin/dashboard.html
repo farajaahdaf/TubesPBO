@@ -56,7 +56,6 @@
                         <i class="bi bi-book display-4"></i>
                         <h5 class="card-title mt-3">Total Buku</h5>
                         <p class="card-text display-6" th:text="${totalBooks}">0</p>
-                        <!-- <small class="text-muted">Total Stok: <span th:text="${totalBookStock}">0</span></small> -->
                     </div>
                 </div>
             </div>
@@ -74,7 +73,7 @@
                     <div class="card-body text-center">
                         <i class="bi bi-journal-check display-4"></i>
                         <h5 class="card-title mt-3">Peminjaman Aktif</h5>
-                        <p class="card-text display-6">0</p>
+                        <p class="card-text display-6" th:text="${activeLoanCount}">0</p>
                     </div>
                 </div>
             </div>
@@ -83,30 +82,44 @@
                     <div class="card-body text-center">
                         <i class="bi bi-exclamation-triangle display-4"></i>
                         <h5 class="card-title mt-3">Terlambat</h5>
-                        <p class="card-text display-6">0</p>
+                        <p class="card-text display-6" th:text="${overdueCount}">0</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Quick Actions -->
+        <!-- Quick Actions and Recent Activities -->
         <div class="row mt-4">
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="card-title mb-0">Quick Actions</h5>
+                        <h5 class="card-title mb-0">Peminjaman Aktif</h5>
                     </div>
                     <div class="card-body">
-                        <div class="d-grid gap-2">
-                            <a href="/admin/books/add" class="btn btn-primary">
-                                <i class="bi bi-plus-circle"></i> Tambah Buku Baru
-                            </a>
-                            <a href="/admin/books" class="btn btn-info text-white">
-                                <i class="bi bi-book"></i> Kelola Buku
-                            </a>
-                            <a href="#" class="btn btn-warning text-white">
-                                <i class="bi bi-journal-text"></i> Kelola Peminjaman
-                            </a>
+                        <div th:if="${activeLoans == null || activeLoans.empty}" class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Tidak ada peminjaman aktif saat ini.
+                        </div>
+                        <div th:if="${activeLoans != null && !activeLoans.empty}" class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Peminjam</th>
+                                        <th>Buku</th>
+                                        <th>Tanggal Pinjam</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="loan : ${activeLoans}">
+                                        <td th:text="${loan.user.username}"></td>
+                                        <td th:text="${loan.book.title}"></td>
+                                        <td th:text="${#temporals.format(loan.borrowDate, 'dd-MM-yyyy HH:mm')}"></td>
+                                        <td>
+                                            <span class="badge bg-warning">Dipinjam</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -117,8 +130,23 @@
                         <h5 class="card-title mb-0">Aktivitas Terbaru</h5>
                     </div>
                     <div class="card-body">
-                        <div class="alert alert-info">
+                        <div th:if="${recentActivities == null || recentActivities.empty}" class="alert alert-info">
                             <i class="bi bi-info-circle"></i> Belum ada aktivitas terbaru.
+                        </div>
+                        <div th:if="${recentActivities != null && !recentActivities.empty}">
+                            <div class="list-group">
+                                <div th:each="activity : ${recentActivities}" class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">
+                                            <span th:text="${activity.user.username}"></span>
+                                            <span th:if="${activity.status == 'BORROWED'}" class="text-warning">meminjam</span>
+                                            <span th:if="${activity.status == 'RETURNED'}" class="text-success">mengembalikan</span>
+                                            buku "<span th:text="${activity.book.title}"></span>"
+                                        </h6>
+                                        <small th:text="${#temporals.format(activity.borrowDate, 'dd-MM-yyyy HH:mm')}"></small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -37,20 +37,28 @@ public class DashboardController {
         model.addAttribute("totalBooks", bookService.getTotalBooks());
         model.addAttribute("totalBookStock", bookService.getTotalBookStock());
         
-        // Menambahkan data peminjaman
-        long borrowedCount = borrowTransactionService.getActiveBorrowedCount(user);
-        long totalTransactions = borrowTransactionService.getTotalTransactions(user);
-        
-        model.addAttribute("borrowedCount", borrowedCount);
-        model.addAttribute("totalTransactions", totalTransactions);
-        
         if ("ADMIN".equals(user.getRole())) {
+            // Get all active loans for admin dashboard
+            List<BorrowTransaction> activeLoans = borrowTransactionService.getAllActiveTransactions();
+            model.addAttribute("activeLoans", activeLoans);
+            model.addAttribute("activeLoanCount", activeLoans.size());
+            
+            // Get recent activities (last 10 transactions)
+            List<BorrowTransaction> recentActivities = borrowTransactionService.getRecentTransactions(10);
+            model.addAttribute("recentActivities", recentActivities);
+            
+            // Get count of overdue books
+            long overdueCount = borrowTransactionService.getOverdueTransactionsCount();
+            model.addAttribute("overdueCount", overdueCount);
+            
             return "admin/dashboard";
         } else {
             model.addAttribute("books", bookService.getAllBooks());
-            // Menambahkan daftar peminjaman aktif
+            // Add user-specific borrowing data
             List<BorrowTransaction> activeLoans = borrowTransactionService.getActiveBorrowings(user);
             model.addAttribute("activeLoans", activeLoans);
+            model.addAttribute("borrowedCount", activeLoans.size());
+            model.addAttribute("totalTransactions", borrowTransactionService.getTotalTransactions(user));
             return "user/dashboard";
         }
     }

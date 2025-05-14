@@ -29,20 +29,4 @@ public class BorrowTransaction {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
-    public void borrow() {
-        this.status = "BORROWED";
-        this.borrowDate = LocalDateTime.now();
-        if (this.book != null) {
-            this.book.setStock(this.book.getStock() - 1);
-        }
-    }
-
-    public void returnBook() {
-        this.status = "RETURNED";
-        this.returnDate = LocalDateTime.now();
-        if (this.book != null) {
-            this.book.setStock(this.book.getStock() + 1);
-        }
-    }
 } 

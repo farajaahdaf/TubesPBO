@@ -45,18 +45,21 @@ public class BorrowTransactionController {
             return "redirect:/login";
         }
 
-        Book book = bookService.getBookByIsbn(isbn);
-        
-        if (book != null && book.getStock() > 0) {
-            BorrowTransaction transaction = new BorrowTransaction();
-            transaction.setBook(book);
-            transaction.setUser(user);
-            transaction.borrow();
-            borrowTransactionService.saveBorrowTransaction(transaction);
-            
-            redirectAttributes.addFlashAttribute("success", 
-                "Buku berhasil dipinjam pada " + transaction.getBorrowDate().format(DATE_FORMATTER));
-            return "redirect:/transactions/my-borrows";
+        try {
+            Book book = bookService.getBookByIsbn(isbn);
+            if (book != null && book.getStock() > 0) {
+                BorrowTransaction transaction = new BorrowTransaction();
+                transaction.setBook(book);
+                transaction.setUser(user);
+                
+                BorrowTransaction savedTransaction = borrowTransactionService.saveBorrowTransaction(transaction);
+                
+                redirectAttributes.addFlashAttribute("success", 
+                    "Buku berhasil dipinjam pada " + savedTransaction.getBorrowDate().format(DATE_FORMATTER));
+                return "redirect:/transactions/my-borrows";
+            }
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
         
         redirectAttributes.addFlashAttribute("error", "Maaf, buku tidak tersedia untuk dipinjam");
@@ -70,16 +73,23 @@ public class BorrowTransactionController {
             return "redirect:/login";
         }
 
-        BorrowTransaction transaction = borrowTransactionService.getTransactionById(id).orElse(null);
-        
-        if (transaction != null && transaction.getUser().getId().equals(user.getId())) {
-            transaction.returnBook();
-            borrowTransactionService.saveBorrowTransaction(transaction);
+        try {
+            BorrowTransaction transaction = borrowTransactionService.getTransactionById(id).orElse(null);
             
-            redirectAttributes.addFlashAttribute("success", 
-                "Buku berhasil dikembalikan pada " + transaction.getReturnDate().format(DATE_FORMATTER));
-        } else {
-            redirectAttributes.addFlashAttribute("error", "Gagal mengembalikan buku");
+            if (transaction != null && transaction.getUser().getId().equals(user.getId())) {
+                BorrowTransaction returnedTransaction = borrowTransactionService.returnBook(id);
+                
+                if (returnedTransaction != null) {
+                    redirectAttributes.addFlashAttribute("success", 
+                        "Buku berhasil dikembalikan pada " + returnedTransaction.getReturnDate().format(DATE_FORMATTER));
+                } else {
+                    redirectAttributes.addFlashAttribute("error", "Gagal mengembalikan buku");
+                }
+            } else {
+                redirectAttributes.addFlashAttribute("error", "Transaksi tidak ditemukan atau Anda tidak memiliki akses");
+            }
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
         
         return "redirect:/transactions/my-borrows";

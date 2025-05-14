@@ -2,17 +2,26 @@ package com.perpustakaan.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import com.perpustakaan.model.BorrowTransaction;
 import com.perpustakaan.model.User;
+import com.perpustakaan.model.Book;
 import com.perpustakaan.repository.BorrowTransactionRepository;
+import com.perpustakaan.repository.BookRepository;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 @Service
 public class BorrowTransactionService {
     
     @Autowired
     private BorrowTransactionRepository borrowTransactionRepository;
+    
+    @Autowired
+    private BookRepository bookRepository;
     
     public List<BorrowTransaction> getAllTransactions() {
         return borrowTransactionRepository.findAll();
@@ -26,17 +35,39 @@ public class BorrowTransactionService {
         return borrowTransactionRepository.findById(id);
     }
     
+    @Transactional
     public BorrowTransaction saveBorrowTransaction(BorrowTransaction transaction) {
-        transaction.borrow(); // Set status dan tanggal pinjam
-        return borrowTransactionRepository.save(transaction);
+        Book book = transaction.getBook();
+        if (book != null && book.getStock() > 0) {
+            // Update book stock
+            book.setStock(book.getStock() - 1);
+            bookRepository.save(book);
+            
+            // Set transaction status and date
+            transaction.setStatus("BORROWED");
+            transaction.setBorrowDate(LocalDateTime.now());
+            
+            return borrowTransactionRepository.save(transaction);
+        }
+        throw new RuntimeException("Buku tidak tersedia untuk dipinjam");
     }
     
+    @Transactional
     public BorrowTransaction returnBook(Long id) {
-        Optional<BorrowTransaction> transaction = borrowTransactionRepository.findById(id);
-        if (transaction.isPresent()) {
-            BorrowTransaction existingTransaction = transaction.get();
-            existingTransaction.returnBook(); // Set status dan tanggal kembali
-            return borrowTransactionRepository.save(existingTransaction);
+        Optional<BorrowTransaction> transactionOpt = borrowTransactionRepository.findById(id);
+        if (transactionOpt.isPresent()) {
+            BorrowTransaction transaction = transactionOpt.get();
+            Book book = transaction.getBook();
+            
+            // Update book stock
+            book.setStock(book.getStock() + 1);
+            bookRepository.save(book);
+            
+            // Update transaction status and return date
+            transaction.setStatus("RETURNED");
+            transaction.setReturnDate(LocalDateTime.now());
+            
+            return borrowTransactionRepository.save(transaction);
         }
         return null;
     }
@@ -63,5 +94,21 @@ public class BorrowTransactionService {
     
     public List<BorrowTransaction> getAllTransactionsByUser(User user) {
         return borrowTransactionRepository.findByUser(user);
+    }
+
+    // New methods for admin dashboard
+    public List<BorrowTransaction> getAllActiveTransactions() {
+        return borrowTransactionRepository.findByStatus("BORROWED", Sort.by(Sort.Direction.DESC, "borrowDate"));
+    }
+
+    public List<BorrowTransaction> getRecentTransactions(int limit) {
+        return borrowTransactionRepository.findAll(
+            PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "borrowDate"))
+        ).getContent();
+    }
+
+    public long getOverdueTransactionsCount() {
+        LocalDateTime now = LocalDateTime.now();
+        return borrowTransactionRepository.countByStatusAndBorrowDateBefore("BORROWED", now.minusDays(14));
     }
 } 
