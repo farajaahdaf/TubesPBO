@@ -41,9 +41,10 @@ public class BookController {
         model.addAttribute("user", user);
         model.addAttribute("books", bookService.getAllBooks());
         model.addAttribute("borrowedBookIsbn", borrowedBookIsbn);
-        
         return "user/books-list";
     }
+
+
 
     // Endpoint untuk melihat peminjaman user
     @GetMapping("/my-borrows")

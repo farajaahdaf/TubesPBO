@@ -9,7 +9,7 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="#"><i class="bi bi-book"></i> Perpustakaan</a>
+            <a class="navbar-brand" href="/dashboard"><i class="bi bi-book"></i> Perpustakaan</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -44,6 +44,7 @@
                 <h5 class="card-title mb-0">Daftar Buku</h5>
             </div>
             <div class="card-body">
+
                 <div th:if="${books == null || books.empty}" class="alert alert-info">
                     <i class="bi bi-info-circle"></i> Belum ada buku yang tersedia.
                 </div>
