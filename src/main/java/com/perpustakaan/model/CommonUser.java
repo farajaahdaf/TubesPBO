@@ -10,10 +10,10 @@ import lombok.Setter;
 public class CommonUser extends User {
     
     public void borrowBook() {
-        // Implementasi akan ditambahkan nanti
+        // Di implementasikan di borrowTransactionService
     }
     
     public void returnBook() {
-        // Implementasi akan ditambahkan nanti
+        // Di implementasikan di borrowTransactionService
     }
 } 

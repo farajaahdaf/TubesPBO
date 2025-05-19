@@ -24,23 +24,34 @@ public class BookController {
     
     // Endpoint untuk user melihat daftar buku
     @GetMapping("/books-list")
-    public String userBooksList(Model model, HttpSession session) {
+    public String userListBooks(@RequestParam(value = "keyword", required = false) String keyword, Model model, HttpSession session) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
-
-        // Get active loans for the user
+        
+        // melihat yang lagi dipinjam
         List<BorrowTransaction> activeLoans = borrowTransactionService.getActiveBorrowings(user);
         
-        // Create a list of ISBNs of currently borrowed books
+        
         List<Long> borrowedBookIsbn = activeLoans.stream()
             .map(loan -> loan.getBook().getIsbn())
             .toList();
 
         model.addAttribute("user", user);
-        model.addAttribute("books", bookService.getAllBooks());
         model.addAttribute("borrowedBookIsbn", borrowedBookIsbn);
+        if (keyword != null && !keyword.isEmpty()) {
+            model.addAttribute("books", bookService.searchBooks(keyword));
+        } else {
+            model.addAttribute("books", bookService.getAllBooks());
+        }
+        return "user/books-list";
+    }
+    public String userBooksList(Model model, HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
         return "user/books-list";
     }
 
