@@ -65,6 +65,26 @@
 
     <!-- Content -->
     <div class="container mt-4">
+        <!-- Fine Information -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="card-title mb-0">Informasi Denda</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-12">
+                                <h6>Total Denda:</h6>
+                                <h3 class="text-danger">Rp <span th:text="${#numbers.formatDecimal(fine, 0, 'COMMA', 0, 'POINT')}"></span></h3>
+                                <p class="text-muted mt-2">Silakan bayar denda di perpustakaan untuk melanjutkan peminjaman buku.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Peminjaman Aktif -->
         <div class="card mb-4">
             <div class="card-header">
@@ -89,9 +109,13 @@
                             <tr th:each="loan : ${activeLoans}">
                                 <td th:text="${loan.book.isbn}"></td>
                                 <td th:text="${loan.book.title}"></td>
-                                <td th:text="${#temporals.format(loan.borrowDate, 'dd-MM-yyyy HH:mm:ss')}"></td>
                                 <td>
-                                    <span class="badge bg-warning">Dipinjam</span>
+                                    <div>Pinjam: <span th:text="${#temporals.format(loan.borrowDate, 'dd-MM-yyyy HH:mm:ss')}"></span></div>
+                                    <div class="text-danger">Batas: <span th:text="${#temporals.format(loan.borrowDate.plusMinutes(2), 'dd-MM-yyyy HH:mm:ss')}"></span></div>
+                                </td>
+                                <td>
+                                    <span th:if="${#temporals.createNow().isAfter(loan.borrowDate.plusMinutes(2))}" class="badge bg-danger">Terlambat</span>
+                                    <span th:unless="${#temporals.createNow().isAfter(loan.borrowDate.plusMinutes(2))}" class="badge bg-warning">Dipinjam</span>
                                 </td>
                                 <td>
                                     <a th:href="@{/transactions/return/{id}(id=${loan.id})}"

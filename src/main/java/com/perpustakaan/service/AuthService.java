@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import jakarta.annotation.PostConstruct;
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuthService {
@@ -70,5 +71,15 @@ public class AuthService {
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    public User updateUser(User user) {
+        return userRepository.save(user);
+    }
+
+    @Transactional
+    public User updateUserFine(User user, double fine) {
+        user.setFine(user.getFine() + fine);
+        return userRepository.save(user);
     }
 } 

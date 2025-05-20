@@ -5,6 +5,7 @@ import com.perpustakaan.model.User;
 import com.perpustakaan.model.BorrowTransaction;
 import com.perpustakaan.service.BookService;
 import com.perpustakaan.service.BorrowTransactionService;
+import com.perpustakaan.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
+import java.time.LocalDateTime;
 
 @Controller
 public class BookController {
@@ -21,6 +23,9 @@ public class BookController {
     
     @Autowired
     private BorrowTransactionService borrowTransactionService;
+    
+    @Autowired
+    private AuthService authService;
     
     // Endpoint untuk user melihat daftar buku
     @GetMapping("/books-list")
@@ -68,6 +73,7 @@ public class BookController {
         model.addAttribute("user", user);
         model.addAttribute("activeLoans", borrowTransactionService.getActiveBorrowings(user));
         model.addAttribute("allTransactions", borrowTransactionService.getTransactionsByUser(user));
+        model.addAttribute("fine", borrowTransactionService.calculateTotalFine(user));
         
         return "user/my-borrows";
     }
