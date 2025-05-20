@@ -82,4 +82,17 @@ public class AuthService {
         user.setFine(user.getFine() + fine);
         return userRepository.save(user);
     }
+
+    @Transactional
+    public User resetUserFine(User user) {
+        User updatedUser = userRepository.findById(user.getId())
+            .orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
+        updatedUser.setFine(0.0);
+        return userRepository.save(updatedUser);
+    }
+
+    public User getUserById(Long id) {
+        return userRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
+    }
 } 
