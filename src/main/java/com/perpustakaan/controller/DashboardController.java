@@ -46,7 +46,7 @@ public class DashboardController {
         model.addAttribute("totalBookStock", bookService.getTotalBookStock());
         
         if ("ADMIN".equals(currentUser.getRole())) {
-            // Get all active loans for admin dashboard
+            // Get all active loans for admin dashboards
             List<BorrowTransaction> activeLoans = borrowTransactionService.getAllActiveTransactions();
             model.addAttribute("activeLoans", activeLoans);
             model.addAttribute("activeLoanCount", activeLoans.size());
