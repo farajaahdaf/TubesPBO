@@ -225,31 +225,6 @@
             });
             toastList.forEach(toast => toast.show());
         });
-
-        // Update denda secara realtime setiap 5 detik
-        function updateFine() {
-            fetch('/api/update-fine', {
-                headers: {
-                    'Cache-Control': 'no-cache, no-store, must-revalidate',
-                    'Pragma': 'no-cache'
-                }
-            })
-            .then(response => response.text())
-            .then(html => {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const fineElement = document.querySelector('#fine-amount');
-                if (fineElement) {
-                    fineElement.innerHTML = doc.querySelector('#fine-amount').innerHTML;
-                }
-            });
-        }
-
-        // Update denda setiap 1 menit
-        setInterval(updateFine, 60000);
-        
-        // Update denda saat halaman dimuat
-        updateFine();
     </script>
 </body>
 </html> 
