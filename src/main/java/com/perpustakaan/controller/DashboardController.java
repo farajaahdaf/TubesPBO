@@ -82,6 +82,7 @@ public class DashboardController {
         
         List<User> users = authService.getAllUsers();
         model.addAttribute("users", users);
+        
         return "admin/listUser";
     }
 } 
