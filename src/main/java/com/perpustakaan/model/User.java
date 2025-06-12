@@ -23,6 +23,9 @@ public abstract class User {
     @Column(nullable = false)
     private String role;
     
+    @Column(nullable = false)
+    private double fine = 0.0; // Denda user, default 0
+    
     public boolean login(String username, String password) {
         return this.username.equals(username) && this.password.equals(password);
     }
