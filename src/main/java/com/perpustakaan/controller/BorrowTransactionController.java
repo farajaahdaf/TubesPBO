@@ -10,9 +10,11 @@ import com.perpustakaan.model.Book;
 import com.perpustakaan.model.User;
 import com.perpustakaan.service.BorrowTransactionService;
 import com.perpustakaan.service.BookService;
+import com.perpustakaan.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/transactions")
@@ -24,6 +26,9 @@ public class BorrowTransactionController {
     @Autowired
     private BookService bookService;
 
+    @Autowired
+    private UserService userService;
+
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
     @GetMapping("/my-borrows")
@@ -33,7 +38,14 @@ public class BorrowTransactionController {
             return "redirect:/login";
         }
         
+        // Hitung total denda
+        double fine = borrowTransactionService.calculateTotalFine(user);
+        
+        // Tambahkan konstanta dan service ke model
+        model.addAttribute("MAX_BORROW_MINUTES", BorrowTransactionService.MAX_BORROW_MINUTES);
+        model.addAttribute("borrowTransactionService", borrowTransactionService);
         model.addAttribute("user", user);
+        model.addAttribute("fine", fine);
         model.addAttribute("activeLoans", borrowTransactionService.getActiveTransactionsByUser(user));
         model.addAttribute("allTransactions", borrowTransactionService.getAllTransactionsByUser(user));
         return "user/my-borrows";
@@ -57,7 +69,6 @@ public class BorrowTransactionController {
                 redirectAttributes.addFlashAttribute("error", 
                     "Anda sudah meminjam buku ini. Silakan kembalikan terlebih dahulu sebelum meminjam lagi.");
                 return "redirect:/dashboard";
-                
             }
             
             if (book != null && book.getStock() > 0) {
@@ -90,11 +101,82 @@ public class BorrowTransactionController {
             BorrowTransaction transaction = borrowTransactionService.getTransactionById(id).orElse(null);
             
             if (transaction != null && transaction.getUser().getId().equals(user.getId())) {
+                // Hanya mengembalikan buku tanpa menghitung denda
                 BorrowTransaction returnedTransaction = borrowTransactionService.returnBook(id);
                 
                 if (returnedTransaction != null) {
                     redirectAttributes.addFlashAttribute("success", 
                         "Buku berhasil dikembalikan pada " + returnedTransaction.getReturnDate().format(DATE_FORMATTER));
+                } else {
+                    redirectAttributes.addFlashAttribute("error", "Gagal mengembalikan buku");
+                }
+            } else {
+                redirectAttributes.addFlashAttribute("error", "Transaksi tidak ditemukan atau Anda tidak memiliki akses");
+            }
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        
+        return "redirect:/transactions/my-borrows";
+    }
+
+    @PostMapping("/pay-fine")
+    public String payFine(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        User user = (User) session.getAttribute("user");
+        if (user != null) {
+            try {
+                // Cek apakah ada peminjaman aktif
+                List<BorrowTransaction> activeLoans = borrowTransactionService.getActiveBorrowings(user);
+                if (!activeLoans.isEmpty()) {
+                    throw new RuntimeException("Anda harus mengembalikan semua buku yang dipinjam terlebih dahulu sebelum membayar denda");
+                }
+                
+                // Bayar denda
+                borrowTransactionService.payFine(user);
+                
+                // Ambil data user terbaru dari database
+                User updatedUser = userService.findByUsername(user.getUsername());
+                if (updatedUser != null) {
+                    // Update session
+                    session.setAttribute("user", updatedUser);
+                }
+                
+                redirectAttributes.addFlashAttribute("success", "Pembayaran denda berhasil!");
+                return "redirect:/transactions/my-borrows";
+            } catch (Exception e) {
+                redirectAttributes.addFlashAttribute("error", e.getMessage());
+                return "redirect:/transactions/my-borrows";
+            }
+        }
+        return "redirect:/login";
+    }
+
+    @PostMapping("/return-with-fine")
+    public String returnWithFine(@RequestParam Long transactionId, HttpSession session, RedirectAttributes redirectAttributes) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            BorrowTransaction transaction = borrowTransactionService.getTransactionById(transactionId).orElse(null);
+            
+            if (transaction != null && transaction.getUser().getId().equals(user.getId())) {
+                // Hitung denda sebelum mengembalikan buku
+                double fine = borrowTransactionService.calculateTransactionFine(transaction);
+                if (fine > 0) {
+                    // Tambahkan denda ke total denda user
+                    user.setFine(user.getFine() + fine);
+                    userService.save(user);
+                }
+                
+                // Kembalikan buku
+                BorrowTransaction returnedTransaction = borrowTransactionService.returnBook(transactionId);
+                
+                if (returnedTransaction != null) {
+                    redirectAttributes.addFlashAttribute("success", 
+                        "Buku berhasil dikembalikan dan denda berhasil dibayar pada " + 
+                        returnedTransaction.getReturnDate().format(DATE_FORMATTER));
                 } else {
                     redirectAttributes.addFlashAttribute("error", "Gagal mengembalikan buku");
                 }

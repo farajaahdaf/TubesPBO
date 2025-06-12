@@ -15,6 +15,8 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 import java.time.LocalDateTime;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 public class DashboardController {
@@ -76,11 +78,11 @@ public class DashboardController {
             model.addAttribute("borrowedCount", activeLoans.size());
             model.addAttribute("totalTransactions", borrowTransactionService.getTotalTransactions(currentUser));
             
-            // Tambahkan perhitungan denda dan keterlambatan
+            // Update denda secara realtime
             double totalFine = borrowTransactionService.calculateTotalFine(currentUser);
             model.addAttribute("totalFine", totalFine);
             
-            // Hitung total keterlambatan menggunakan logika yang sama dengan my-borrows
+            // Hitung total keterlambatan
             long overdueCount = activeLoans.stream()
                 .filter(loan -> {
                     LocalDateTime now = LocalDateTime.now();
@@ -114,14 +116,67 @@ public class DashboardController {
             return "redirect:/login";
         }
         
-        // Reset denda user
-        user.setFine(0.0);
-        authService.updateUser(user);
+        try {
+            // Cek apakah ada peminjaman aktif
+            List<BorrowTransaction> activeLoans = borrowTransactionService.getActiveBorrowings(user);
+            if (!activeLoans.isEmpty()) {
+                throw new RuntimeException("Anda harus mengembalikan semua buku yang dipinjam terlebih dahulu sebelum membayar denda");
+            }
+            
+            // Reset denda menjadi 0
+            user.setFine(0.0);
+            authService.updateUser(user);
+            
+            // Update session
+            session.setAttribute("user", user);
+            
+            redirectAttributes.addFlashAttribute("success", "Denda berhasil dibayar!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
         
-        // Update user di session
-        session.setAttribute("user", user);
-        
-        redirectAttributes.addFlashAttribute("success", "Denda berhasil dibayar!");
         return "redirect:/dashboard";
+    }
+
+    @GetMapping("/api/update-fine")
+    @ResponseBody
+    public String updateFine(HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        if (user != null) {
+            double totalFine = borrowTransactionService.calculateTotalFine(user);
+            user.setFine(totalFine);
+            session.setAttribute("user", user);
+            
+            // Cek peminjaman aktif
+            List<BorrowTransaction> activeLoans = borrowTransactionService.getActiveBorrowings(user);
+            
+            return String.format("""
+                <div class="card-body">
+                    <h3 class="text-danger mb-3">
+                        Total Denda: Rp <span id="fine-amount">%s</span>
+                    </h3>
+                    
+                    <!-- Tombol Bayar Denda -->
+                    <div th:if="${user.fine > 0 && activeLoans.empty}">
+                        <form th:action="@{/pay-fine}" method="post">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-cash"></i> Bayar Denda
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Pesan Peringatan -->
+                    <div th:if="${user.fine > 0 && !activeLoans.empty}" class="alert alert-warning mt-3">
+                        <i class="bi bi-exclamation-triangle"></i> 
+                        Anda harus mengembalikan semua buku yang dipinjam terlebih dahulu sebelum membayar denda.
+                    </div>
+                </div>
+                """, 
+                String.format("%,.0f", totalFine),
+                totalFine > 0 && activeLoans.isEmpty() ? "" : "d-none",
+                totalFine > 0 && !activeLoans.isEmpty() ? "" : "d-none"
+            );
+        }
+        return "";
     }
 } 

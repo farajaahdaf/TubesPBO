@@ -76,8 +76,18 @@
                         <div class="row align-items-center">
                             <div class="col-md-12">
                                 <h6>Total Denda:</h6>
-                                <h3 class="text-danger">Rp <span th:text="${#numbers.formatDecimal(fine, 0, 'COMMA', 0, 'POINT')}"></span></h3>
-                                <p class="text-muted mt-2">Silakan bayar denda di perpustakaan untuk melanjutkan peminjaman buku.</p>
+                                <h3 class="text-danger">Rp <span th:text="${#numbers.formatDecimal(fine, 0, 'COMMA', 0, 'POINT')}">0</span></h3>
+                                <p class="text-muted mt-2">Silakan kembalikan semua buku yang dipinjam terlebih dahulu sebelum membayar denda.</p>
+                                <div th:if="${fine > 0 && activeLoans.empty}" class="mt-3">
+                                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#payFineModal">
+                                        <i class="bi bi-cash"></i> Bayar Denda
+                                    </button>
+                                </div>
+                                <div th:if="${fine > 0 && !activeLoans.empty}" class="mt-3">
+                                    <div class="alert alert-warning">
+                                        <i class="bi bi-exclamation-triangle"></i> Anda harus mengembalikan semua buku yang dipinjam terlebih dahulu sebelum membayar denda.
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -85,50 +95,83 @@
             </div>
         </div>
 
-        <!-- Peminjaman Aktif -->
+        <!-- Batas Peminjaman -->
         <div class="card mb-4">
             <div class="card-header">
-                <h5 class="card-title mb-0">Peminjaman Aktif</h5>
+                <h5 class="mb-0">Batas Peminjaman</h5>
             </div>
             <div class="card-body">
-                <div th:if="${activeLoans == null || activeLoans.empty}" class="alert alert-info">
-                    <i class="bi bi-info-circle"></i> Belum ada buku yang dipinjam.
-                </div>
-                <div th:if="${activeLoans != null && !activeLoans.empty}" class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>ISBN</th>
-                                <th>Judul Buku</th>
-                                <th>Tanggal Pinjam</th>
-                                <th>Status</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="loan : ${activeLoans}">
-                                <td th:text="${loan.book.isbn}"></td>
-                                <td th:text="${loan.book.title}"></td>
-                                <td>
-                                    <div>Pinjam: <span th:text="${#temporals.format(loan.borrowDate, 'dd-MM-yyyy HH:mm:ss')}"></span></div>
-                                    <div class="text-danger">Batas: <span th:text="${#temporals.format(loan.borrowDate.plusMinutes(2), 'dd-MM-yyyy HH:mm:ss')}"></span></div>
-                                </td>
-                                <td>
-                                    <span th:if="${#temporals.createNow().isAfter(loan.borrowDate.plusMinutes(2))}" class="badge bg-danger">Terlambat</span>
-                                    <span th:unless="${#temporals.createNow().isAfter(loan.borrowDate.plusMinutes(2))}" class="badge bg-warning">Dipinjam</span>
-                                </td>
-                                <td>
-                                    <a th:href="@{/transactions/return/{id}(id=${loan.id})}"
-                                       class="btn btn-success btn-sm">
-                                        <i class="bi bi-check-circle"></i> Kembalikan
-                                    </a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="row align-items-center">
+                    <div class="col-md-12">
+                        <h6>Informasi Peminjaman:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-clock"></i> Batas waktu peminjaman: <span th:text="${T(com.perpustakaan.service.BorrowTransactionService).MAX_BORROW_MINUTES}">1</span> menit</li>
+                            <li><i class="bi bi-exclamation-triangle"></i> Denda keterlambatan: Rp <span th:text="${#numbers.formatDecimal(T(com.perpustakaan.service.BorrowTransactionService).FINE_PER_PERIOD, 0, 'COMMA', 0, 'POINT')}">10.000</span> per <span th:text="${T(com.perpustakaan.service.BorrowTransactionService).PERIOD_MINUTES}">1</span> menit</li>
+                        </ul>
+                        <div class="alert alert-warning mt-3">
+                            <i class="bi bi-info-circle"></i> 
+                            Harap kembalikan buku tepat waktu untuk menghindari denda keterlambatan.
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <!-- Denda Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Denda</h5>
+            </div>
+            <div class="card-body">
+                <h3 class="text-danger mb-3">
+                    Total Denda: Rp <span id="fine-amount" th:text="${#numbers.formatDecimal(user.fine, 0, 'COMMA', 0, 'POINT')}">0</span>
+                </h3>
+                
+                <!-- Pesan Peringatan -->
+                <div th:if="${user.fine > 0 && !activeLoans.empty}" class="alert alert-warning mt-3">
+                    <i class="bi bi-exclamation-triangle"></i> 
+                    Anda harus mengembalikan semua buku yang dipinjam terlebih dahulu sebelum membayar denda.
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabel Peminjaman -->
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ISBN</th>
+                    <th>Judul</th>
+                    <th>Tanggal Pinjam</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="loan : ${activeLoans}" th:data-status="${loan.status}">
+                    <td th:text="${loan.book.isbn}"></td>
+                    <td th:text="${loan.book.title}"></td>
+                    <td>
+                        <div>Pinjam: <span th:text="${#temporals.format(loan.borrowDate, 'dd-MM-yyyy HH:mm:ss')}"></span></div>
+                        <div class="text-danger">Batas: <span th:text="${#temporals.format(loan.borrowDate.plusMinutes(T(com.perpustakaan.service.BorrowTransactionService).MAX_BORROW_MINUTES), 'dd-MM-yyyy HH:mm:ss')}"></span></div>
+                    </td>
+                    <td th:text="${loan.status}"></td>
+                    <td>
+                        <a th:if="${loan.status == 'BORROWED' && #temporals.createNow().isAfter(loan.borrowDate.plusMinutes(T(com.perpustakaan.service.BorrowTransactionService).MAX_BORROW_MINUTES))}" 
+                           href="#" class="btn btn-danger btn-sm" 
+                           th:data-fine="${@borrowTransactionService.calculateTransactionFine(loan)}"
+                           th:data-transaction-id="${loan.id}"
+                           onclick="showPayFineModal(this)">
+                            <i class="bi bi-cash"></i> Kembalikan dan Bayar Denda
+                        </a>
+                        <a th:if="${loan.status == 'BORROWED' && !#temporals.createNow().isAfter(loan.borrowDate.plusMinutes(T(com.perpustakaan.service.BorrowTransactionService).MAX_BORROW_MINUTES))}" 
+                           th:href="@{/transactions/return/{id}(id=${loan.id})}" 
+                           class="btn btn-warning btn-sm">
+                            <i class="bi bi-arrow-return-left"></i> Kembalikan
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
 
         <!-- Riwayat Peminjaman -->
         <div class="card">
@@ -168,6 +211,30 @@
         </div>
     </div>
 
+    <!-- Modal Konfirmasi Bayar Denda -->
+    <div class="modal fade" id="payFineModal" tabindex="-1" aria-labelledby="payFineModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="payFineModalLabel">Konfirmasi Pembayaran Denda</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Anda akan mengembalikan buku dan membayar denda keterlambatan sebesar:</p>
+                    <h4 class="text-danger" id="modalFineAmount">Rp 0</h4>
+                    <p class="text-muted">Apakah Anda yakin ingin melanjutkan?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <form th:action="@{/transactions/return-with-fine}" method="post" id="returnWithFineForm">
+                        <input type="hidden" name="transactionId" id="transactionId">
+                        <button type="submit" class="btn btn-primary">Ya, Bayar Denda</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Initialize all toasts
@@ -181,6 +248,40 @@
             });
             toastList.forEach(toast => toast.show());
         });
+
+        function showPayFineModal(button) {
+            const fine = button.getAttribute('data-fine');
+            const transactionId = button.getAttribute('data-transaction-id');
+            
+            document.getElementById('modalFineAmount').textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(fine);
+            document.getElementById('transactionId').value = transactionId;
+            
+            new bootstrap.Modal(document.getElementById('payFineModal')).show();
+        }
+
+        function updateFine() {
+            fetch('/api/update-fine', {
+                headers: {
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache'
+                }
+            })
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const fineElement = document.querySelector('#fine-amount');
+                if (fineElement) {
+                    fineElement.innerHTML = doc.querySelector('#fine-amount').innerHTML;
+                }
+            });
+        }
+
+        // Update denda setiap 1 menit
+        setInterval(updateFine, 60000);
+        
+        // Update denda saat halaman dimuat
+        updateFine();
     </script>
 </body>
 </html> 
