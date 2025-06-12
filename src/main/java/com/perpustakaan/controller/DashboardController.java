@@ -61,9 +61,6 @@ public class DashboardController {
             long overdueCount = borrowTransactionService.getOverdueTransactionsCount();
             model.addAttribute("overdueCount", overdueCount);
             
-            List<User> allUsers = authService.getAllUsers();
-            model.addAttribute("allUsers", allUsers);
-            
             return "admin/dashboard";
         } else {
             // Get all books and active loans
@@ -139,47 +136,5 @@ public class DashboardController {
         }
         
         return "redirect:/dashboard";
-    }
-
-    @GetMapping("/api/update-fine")
-    @ResponseBody
-    public String updateFine(HttpSession session) {
-        User user = (User) session.getAttribute("user");
-        if (user != null) {
-            double totalFine = borrowTransactionService.calculateTotalFine(user);
-            user.setFine(totalFine);
-            session.setAttribute("user", user);
-            
-            // Cek peminjaman aktif
-            List<BorrowTransaction> activeLoans = borrowTransactionService.getActiveBorrowings(user);
-            
-            return String.format("""
-                <div class="card-body">
-                    <h3 class="text-danger mb-3">
-                        Total Denda: Rp <span id="fine-amount">%s</span>
-                    </h3>
-                    
-                    <!-- Tombol Bayar Denda -->
-                    <div th:if="${user.fine > 0 && activeLoans.empty}">
-                        <form th:action="@{/pay-fine}" method="post">
-                            <button type="submit" class="btn btn-success">
-                                <i class="bi bi-cash"></i> Bayar Denda
-                            </button>
-                        </form>
-                    </div>
-                    
-                    <!-- Pesan Peringatan -->
-                    <div th:if="${user.fine > 0 && !activeLoans.empty}" class="alert alert-warning mt-3">
-                        <i class="bi bi-exclamation-triangle"></i> 
-                        Anda harus mengembalikan semua buku yang dipinjam terlebih dahulu sebelum membayar denda.
-                    </div>
-                </div>
-                """, 
-                String.format("%,.0f", totalFine),
-                totalFine > 0 && activeLoans.isEmpty() ? "" : "d-none",
-                totalFine > 0 && !activeLoans.isEmpty() ? "" : "d-none"
-            );
-        }
-        return "";
     }
 } 
