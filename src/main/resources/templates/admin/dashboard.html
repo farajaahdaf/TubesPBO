@@ -152,7 +152,7 @@
         <div class="row mt-4">
             <div class="col-md-12">
                 <div class="card">
-                    <div class="card-header">
+                    <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">Daftar Denda User</h5>
                     </div>
                     <div class="card-body">
@@ -164,17 +164,31 @@
                                 <thead>
                                     <tr>
                                         <th>Username</th>
-                                        <th>Nama Lengkap</th>
-                                        <th>Denda (Rp)</th>
+                                        <th class="text-end">Total Denda</th>
+                                        <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr th:each="user : ${allUsers}">
                                         <td th:text="${user.username}"></td>
-                                        <td th:text="${user.username}"></td>
-                                        <td th:text="${#numbers.formatDecimal(user.fine, 0, 'COMMA', 0, 'POINT')}"></td>
+                                        <td class="text-end">
+                                            <span th:text="${'Rp ' + #numbers.formatDecimal(user.fine, 0, 'COMMA', 0, 'POINT')}">0</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${user.fine > 0}" class="badge bg-danger">Belum Lunas</span>
+                                            <span th:if="${user.fine == 0}" class="badge bg-success">Lunas</span>
+                                        </td>
                                     </tr>
                                 </tbody>
+                                <tfoot>
+                                    <tr class="table-dark">
+                                        <td><strong>Total Denda Keseluruhan</strong></td>
+                                        <td class="text-end">
+                                            <strong th:text="${'Rp ' + #numbers.formatDecimal(#aggregates.sum(allUsers.![fine]), 0, 'COMMA', 0, 'POINT')}">0</strong>
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
                     </div>
