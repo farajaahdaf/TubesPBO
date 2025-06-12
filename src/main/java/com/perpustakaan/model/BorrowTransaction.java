@@ -13,7 +13,7 @@ import lombok.AllArgsConstructor;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class BorrowTransaction {
+public class BorrowTransaction implements Borrowable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

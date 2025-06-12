@@ -61,6 +61,9 @@ public class DashboardController {
             long overdueCount = borrowTransactionService.getOverdueTransactionsCount();
             model.addAttribute("overdueCount", overdueCount);
             
+            List<User> allUsers = authService.getAllUsers();
+            model.addAttribute("allUsers", allUsers);
+            
             return "admin/dashboard";
         } else {
             // Get all books and active loans
