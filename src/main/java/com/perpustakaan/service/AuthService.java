@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import jakarta.annotation.PostConstruct;
 import java.util.List;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuthService {
@@ -38,12 +37,8 @@ public class AuthService {
         }
         
         User user;
-        if ("ADMIN".equals(role)) {
-            user = new Admin();
-        } else {
-            user = new CommonUser();
-            role = "USER"; 
-        }
+        user = new CommonUser();
+        role = "USER";
         
         user.setUsername(username);
         user.setPassword(password);
@@ -71,24 +66,6 @@ public class AuthService {
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
-    }
-
-    public User updateUser(User user) {
-        return userRepository.save(user);
-    }
-
-    @Transactional
-    public User updateUserFine(User user, double fine) {
-        user.setFine(user.getFine() + fine);
-        return userRepository.save(user);
-    }
-
-    @Transactional
-    public User resetUserFine(User user) {
-        User updatedUser = userRepository.findById(user.getId())
-            .orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
-        updatedUser.setFine(0.0);
-        return userRepository.save(updatedUser);
     }
 
     public User getUserById(Long id) {

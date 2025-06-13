@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 import java.time.LocalDateTime;
+import com.perpustakaan.repository.UserRepository;
 
 @Controller
 public class DashboardController {
@@ -27,6 +28,9 @@ public class DashboardController {
     
     @Autowired
     private BorrowTransactionService borrowTransactionService;
+
+    @Autowired
+    private UserRepository userRepository;
     
     @GetMapping("/dashboard")
     public String dashboard(HttpSession session, Model model) {
@@ -135,7 +139,7 @@ public class DashboardController {
             
             // Reset denda menjadi 0
             user.setFine(0.0);
-            authService.updateUser(user);
+            userRepository.save(user);
             
             // Update session
             session.setAttribute("user", user);
