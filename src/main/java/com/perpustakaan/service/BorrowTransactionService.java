@@ -8,13 +8,14 @@ import com.perpustakaan.model.User;
 import com.perpustakaan.model.Book;
 import com.perpustakaan.repository.BorrowTransactionRepository;
 import com.perpustakaan.repository.BookRepository;
-import com.perpustakaan.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import com.perpustakaan.repository.UserRepository;
+
 
 @Service
 public class BorrowTransactionService {
@@ -26,13 +27,10 @@ public class BorrowTransactionService {
     private BookRepository bookRepository;
     
     @Autowired
-    private UserRepository userRepository;
-    
-    @Autowired
-    private AuthService authService;
-    
-    @Autowired
     private UserService userService;
+    
+    @Autowired
+    private UserRepository userRepository;
     
     // Variabel global untuk konfigurasi denda
     public static final int MAX_BORROW_MINUTES = 1; // Maksimal peminjaman 2 menit
@@ -83,7 +81,7 @@ public class BorrowTransactionService {
                 if (fine > 0) {
                     // Tambahkan denda ke total denda user
                     user.setFine(user.getFine() + fine);
-                    userService.save(user);
+                    userRepository.save(user);
                 }
                 
                 // Update book stock
@@ -154,7 +152,7 @@ public class BorrowTransactionService {
         // Update denda di database hanya jika berbeda
         if (Math.abs(totalFine - user.getFine()) > 0.01) {
             user.setFine(totalFine);
-            userService.save(user);
+            userRepository.save(user);
         }
         
         return totalFine;
@@ -179,7 +177,7 @@ public class BorrowTransactionService {
         // Reset denda menjadi 0
         user.setFine(0.0);
         // Simpan perubahan ke database
-        userService.save(user);
+        userRepository.save(user);
     }
 
     // Tambahkan method untuk menghitung denda per transaksi

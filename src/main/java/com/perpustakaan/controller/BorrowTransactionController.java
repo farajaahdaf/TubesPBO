@@ -14,7 +14,7 @@ import com.perpustakaan.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
+import com.perpustakaan.repository.UserRepository;
 
 @Controller
 @RequestMapping("/transactions")
@@ -28,6 +28,9 @@ public class BorrowTransactionController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
@@ -167,7 +170,7 @@ public class BorrowTransactionController {
                 if (fine > 0) {
                     // Tambahkan denda ke total denda user
                     user.setFine(user.getFine() + fine);
-                    userService.save(user);
+                    userRepository.save(user);
                 }
                 
                 // Kembalikan buku
