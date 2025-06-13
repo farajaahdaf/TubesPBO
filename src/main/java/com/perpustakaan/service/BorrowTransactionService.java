@@ -26,8 +26,7 @@ public class BorrowTransactionService {
     @Autowired
     private BookRepository bookRepository;
     
-    @Autowired
-    private UserService userService;
+  
     
     @Autowired
     private UserRepository userRepository;

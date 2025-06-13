@@ -10,7 +10,6 @@ import com.perpustakaan.model.Book;
 import com.perpustakaan.model.User;
 import com.perpustakaan.service.BorrowTransactionService;
 import com.perpustakaan.service.BookService;
-import com.perpustakaan.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -25,9 +24,6 @@ public class BorrowTransactionController {
 
     @Autowired
     private BookService bookService;
-
-    @Autowired
-    private UserService userService;
 
     @Autowired
     private UserRepository userRepository;
@@ -138,7 +134,7 @@ public class BorrowTransactionController {
                 borrowTransactionService.payFine(user);
                 
                 // Ambil data user terbaru dari database
-                User updatedUser = userService.findByUsername(user.getUsername());
+                User updatedUser = userRepository.findByUsername(user.getUsername()).orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
                 if (updatedUser != null) {
                     // Update session
                     session.setAttribute("user", updatedUser);

@@ -15,7 +15,6 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 import java.time.LocalDateTime;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 public class DashboardController {
