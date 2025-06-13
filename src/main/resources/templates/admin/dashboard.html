@@ -50,7 +50,7 @@
         </div>
 
         <div class="row">
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <a href="/admin/books" class="text-decoration-none">
                     <div class="card mb-4">
                         <div class="card-body text-center">
@@ -61,7 +61,7 @@
                     </div>
                 </a>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <a href="/admin/users" class="text-decoration-none">
                     <div class="card mb-4">
                         <div class="card-body text-center">
@@ -72,21 +72,12 @@
                     </div>
                 </a>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <div class="card mb-4">
                     <div class="card-body text-center">
                         <i class="bi bi-journal-check display-4"></i>
                         <h5 class="card-title mt-3">Peminjaman Aktif</h5>
                         <p class="card-text display-6" th:text="${activeLoanCount}">0</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card mb-4">
-                    <div class="card-body text-center">
-                        <i class="bi bi-exclamation-triangle display-4"></i>
-                        <h5 class="card-title mt-3">Terlambat</h5>
-                        <p class="card-text display-6" th:text="${overdueCount}">0</p>
                     </div>
                 </div>
             </div>
@@ -156,6 +147,55 @@
                 </div>
             </div>
         </div>
+
+        <!-- Tabel Denda User -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Daftar Denda User</h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${allUsers == null || allUsers.empty}" class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Tidak ada user terdaftar.
+                        </div>
+                        <div th:if="${allUsers != null && !allUsers.empty}" class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th class="text-end">Total Denda</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="user : ${allUsers}">
+                                        <td th:text="${user.username}"></td>
+                                        <td class="text-end">
+                                            <span th:text="${'Rp ' + #numbers.formatDecimal(user.fine, 0, 'COMMA', 0, 'POINT')}">0</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${user.fine > 0}" class="badge bg-danger">Belum Lunas</span>
+                                            <span th:if="${user.fine == 0}" class="badge bg-success">Lunas</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr class="table-dark">
+                                        <td><strong>Total Denda Keseluruhan</strong></td>
+                                        <td class="text-end">
+                                            <strong th:text="${'Rp ' + #numbers.formatDecimal(#aggregates.sum(allUsers.![fine]), 0, 'COMMA', 0, 'POINT')}">0</strong>
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- END Tabel Denda User -->
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>

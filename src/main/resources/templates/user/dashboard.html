@@ -139,19 +139,10 @@
                     Total Denda: Rp <span id="fine-amount" th:text="${#numbers.formatDecimal(user.fine, 0, 'COMMA', 0, 'POINT')}">0</span>
                 </h3>
                 
-                <!-- Tombol Bayar Denda -->
-                <div th:if="${user.fine > 0 && activeLoans.empty}">
-                    <form th:action="@{/pay-fine}" method="post">
-                        <button type="submit" class="btn btn-success">
-                            <i class="bi bi-cash"></i> Bayar Denda
-                        </button>
-                    </form>
-                </div>
-                
                 <!-- Pesan Peringatan -->
                 <div th:if="${user.fine > 0 && !activeLoans.empty}" class="alert alert-warning mt-3">
                     <i class="bi bi-exclamation-triangle"></i> 
-                    Anda harus mengembalikan semua buku yang dipinjam terlebih dahulu sebelum membayar denda.
+                    Anda harus mengembalikan semua buku yang dipinjam terlebih dahulu.
                 </div>
             </div>
         </div>
@@ -234,67 +225,6 @@
             });
             toastList.forEach(toast => toast.show());
         });
-
-        // Update denda secara realtime setiap 5 detik
-        function updateFine() {
-            fetch('/api/update-fine', {
-                headers: {
-                    'Cache-Control': 'no-cache, no-store, must-revalidate',
-                    'Pragma': 'no-cache'
-                }
-            })
-            .then(response => response.text())
-            .then(html => {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const fineElement = document.querySelector('#fine-amount');
-                if (fineElement) {
-                    fineElement.innerHTML = doc.querySelector('#fine-amount').innerHTML;
-                    
-                    // Update tombol bayar denda
-                    const fineAmount = parseFloat(doc.querySelector('#fine-amount').textContent.replace(/[^0-9.-]+/g, ''));
-                    const activeLoans = document.querySelectorAll('tr[data-status="BORROWED"]').length;
-                    
-                    const payFineForm = document.querySelector('form[action="/pay-fine"]');
-                    const warningDiv = document.querySelector('.alert-warning');
-                    
-                    if (fineAmount > 0 && activeLoans === 0) {
-                        if (!payFineForm) {
-                            const form = document.createElement('form');
-                            form.action = '/pay-fine';
-                            form.method = 'post';
-                            form.innerHTML = `
-                                <button type="submit" class="btn btn-success">
-                                    <i class="bi bi-cash"></i> Bayar Denda
-                                </button>
-                            `;
-                            document.querySelector('.card-body').appendChild(form);
-                        }
-                        if (warningDiv) warningDiv.remove();
-                    } else if (fineAmount > 0 && activeLoans > 0) {
-                        if (!warningDiv) {
-                            const div = document.createElement('div');
-                            div.className = 'alert alert-warning mt-3';
-                            div.innerHTML = `
-                                <i class="bi bi-exclamation-triangle"></i> 
-                                Anda harus mengembalikan semua buku yang dipinjam terlebih dahulu sebelum membayar denda.
-                            `;
-                            document.querySelector('.card-body').appendChild(div);
-                        }
-                        if (payFineForm) payFineForm.remove();
-                    } else {
-                        if (payFineForm) payFineForm.remove();
-                        if (warningDiv) warningDiv.remove();
-                    }
-                }
-            });
-        }
-
-        // Update denda setiap 1 menit
-        setInterval(updateFine, 60000);
-        
-        // Update denda saat halaman dimuat
-        updateFine();
     </script>
 </body>
 </html> 

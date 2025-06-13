@@ -117,23 +117,7 @@
             </div>
         </div>
 
-        <!-- Denda Section -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Denda</h5>
-            </div>
-            <div class="card-body">
-                <h3 class="text-danger mb-3">
-                    Total Denda: Rp <span id="fine-amount" th:text="${#numbers.formatDecimal(user.fine, 0, 'COMMA', 0, 'POINT')}">0</span>
-                </h3>
-                
-                <!-- Pesan Peringatan -->
-                <div th:if="${user.fine > 0 && !activeLoans.empty}" class="alert alert-warning mt-3">
-                    <i class="bi bi-exclamation-triangle"></i> 
-                    Anda harus mengembalikan semua buku yang dipinjam terlebih dahulu sebelum membayar denda.
-                </div>
-            </div>
-        </div>
+ 
 
         <!-- Tabel Peminjaman -->
         <table class="table">
