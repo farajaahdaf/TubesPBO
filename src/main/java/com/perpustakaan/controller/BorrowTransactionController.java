@@ -59,7 +59,7 @@ public class BorrowTransactionController {
 
         try {
             Book book = bookService.getBookByIsbn(isbn);
-            // Check if user already has an active loan for this book
+            // Cek apakah user sudah meminjam buku ini
             List<BorrowTransaction> activeLoans = borrowTransactionService.getActiveBorrowings(user);
             boolean alreadyBorrowed = activeLoans.stream()
                 .anyMatch(loan -> loan.getBook().getIsbn().equals(isbn));

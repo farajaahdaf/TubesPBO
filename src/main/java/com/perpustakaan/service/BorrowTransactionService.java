@@ -73,7 +73,7 @@ public class BorrowTransactionService {
             Book book = transaction.getBook();
             User user = transaction.getUser();
             
-            // Only process if status is still BORROWED
+            // proses jika masih ada buku yang di pinjam
             if ("BORROWED".equals(transaction.getStatus())) {
                 // Hitung denda sebelum mengembalikan buku
                 double fine = calculateTransactionFine(transaction);
